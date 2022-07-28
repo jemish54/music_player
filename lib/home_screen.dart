@@ -1,6 +1,7 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee_text/marquee_text.dart';
+import 'package:music_player/player.dart';
 import 'package:music_player/providers.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -49,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     itemBuilder: ((context, index) => SongTile(
                         song: item.data![index],
                         onTap: (song) {
-                          ref.read(playerProvider).playSong(song);
+                          Player.instance.playSong(song);
                         })),
                     itemCount: item.data!.length,
                   );
@@ -60,7 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             left: 0,
             right: 0,
             child: StreamBuilder<SongModel>(
-                stream: ref.read(playerProvider).getStream(),
+                stream: Player.instance.getStream(),
                 builder: (context, song) {
                   return song.data == null
                       ? const SizedBox()
@@ -176,14 +177,12 @@ class PlayButton extends StatefulWidget {
 }
 
 class _PlayButtonState extends State<PlayButton> {
-  bool _isPlaying = true;
-
   @override
   Widget build(BuildContext context) {
     return NeumorphicButton(
         onPressed: () {
           setState(() {
-            _isPlaying = !_isPlaying;
+            Player.instance.playpausePlayer();
           });
         },
         style: const NeumorphicStyle(
@@ -191,8 +190,9 @@ class _PlayButtonState extends State<PlayButton> {
             shadowLightColor: Colors.black54,
             depth: 4,
             shape: NeumorphicShape.convex),
-        child:
-            Icon(_isPlaying ? Icons.play_arrow_rounded : Icons.pause_rounded));
+        child: Icon(Player.instance.isPlaying()
+            ? Icons.play_arrow_rounded
+            : Icons.pause_rounded));
   }
 }
 
