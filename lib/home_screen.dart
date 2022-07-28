@@ -1,6 +1,7 @@
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee_text/marquee_text.dart';
+import 'package:music_player/audio_repository.dart';
 import 'package:music_player/player.dart';
 import 'package:music_player/providers.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -17,6 +18,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     requestPermission();
+    ref.read(audioRepositoryProvider).getAllSongs();
+    setState(() {});
     super.initState();
   }
 
@@ -33,39 +36,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
         appBar: AppBar(title: const Text("Music Player")),
         body: Stack(children: [
-          FutureBuilder<List<SongModel>>(
-              future: ref.watch(audioRepositoryProvider).getAllSongs(),
-              builder: (_, item) {
-                if (item.data == null) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (item.data!.isEmpty) {
-                  return const Center(
-                    child: Text("No Songs Available"),
-                  );
-                } else {
-                  return ListView.builder(
-                    itemBuilder: ((context, index) => SongTile(
-                        song: item.data![index],
-                        onTap: (song) {
-                          Player.instance.playSong(song);
-                        })),
-                    itemCount: item.data!.length,
-                  );
-                }
-              }),
+          ListView.builder(
+            itemCount: AudioRepository.instance.songList.length,
+            itemBuilder: ((context, index) {
+              final song = AudioRepository.instance.songList[index];
+              return SongTile(
+                  song: song, onTap: (song) => Player.instance.playSong(index));
+            }),
+          ),
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: StreamBuilder<SongModel>(
+            child: StreamBuilder<int>(
                 stream: Player.instance.getStream(),
-                builder: (context, song) {
-                  return song.data == null
+                builder: (context, index) {
+                  return index.data == null
                       ? const SizedBox()
-                      : NowPlayingCard(song: song.data!);
+                      : NowPlayingCard(
+                          index: index.data!,
+                        );
                 }),
           )
         ]));
@@ -113,11 +103,12 @@ class SongTile extends StatelessWidget {
 }
 
 class NowPlayingCard extends StatelessWidget {
-  final SongModel song;
-  const NowPlayingCard({Key? key, required this.song}) : super(key: key);
+  final int index;
+  const NowPlayingCard({Key? key, required this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final song = AudioRepository.instance.songList[index];
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Neumorphic(
@@ -152,11 +143,20 @@ class NowPlayingCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Column(
-                children: [
-                  marqueeText(song.title),
-                  marqueeText("${song.artist}"),
-                ],
+              GestureDetector(
+                onPanUpdate: (details) {
+                  if (details.delta.dx > 0) {
+                    Player.instance.previousSong(index);
+                  } else {
+                    Player.instance.nextSong(index);
+                  }
+                },
+                child: Column(
+                  children: [
+                    marqueeText(song.title),
+                    marqueeText("${song.artist}"),
+                  ],
+                ),
               ),
               const PlayButton()
             ],
@@ -191,8 +191,8 @@ class _PlayButtonState extends State<PlayButton> {
             depth: 4,
             shape: NeumorphicShape.convex),
         child: Icon(Player.instance.isPlaying()
-            ? Icons.play_arrow_rounded
-            : Icons.pause_rounded));
+            ? Icons.pause_rounded
+            : Icons.play_arrow_rounded));
   }
 }
 
