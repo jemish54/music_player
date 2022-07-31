@@ -17,38 +17,48 @@ class Player {
     return instance;
   }
 
-  final StreamController<int> _playingSongIndex = StreamController<int>();
-
-  Stream<int>? getStream() {
-    return _playingSongIndex.stream;
+  Stream<int?> getStream() {
+    return _audioPlayer.currentIndexStream;
   }
 
-  playSong(int index) async {
-    final song = songList[index];
-    try {
-      await _audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(song.uri!),
-          tag: MediaItem(
-            id: "${song.id}",
-            title: song.title,
-            album: song.album,
-          )));
-      _audioPlayer.play();
-      _playingSongIndex.add(index);
-    } on Exception {
-      log("Error in Playing");
+  playSong(int index) {
+    if (_audioPlayer.audioSource != null) {
+      try {
+        _audioPlayer.seek(Duration.zero, index: index);
+        _audioPlayer.play();
+      } on Exception {
+        log("Error in Playing");
+      }
+    } else {
+      loadInPlayer();
+      playSong(index);
     }
   }
 
-  nextSong(int index) {
-    playSong((index + 1) % songList.length);
+  loadInPlayer() {
+    try {
+      _audioPlayer.setAudioSource(ConcatenatingAudioSource(
+          children: songList
+              .map((e) => AudioSource.uri(Uri.parse(e.uri!),
+                  tag: MediaItem(id: "${e.id}", title: e.title)))
+              .toList()));
+    } on Exception {
+      log("Error in loading list");
+    }
   }
 
-  previousSong(int index) {
-    playSong((index - 1 + songList.length) % songList.length);
+  nextSong() {
+    _audioPlayer.seekToNext();
+  }
+
+  previousSong() {
+    _audioPlayer.seekToPrevious();
+  }
+
+  Stream<bool> isPlayingStream() {
+    return _audioPlayer.playingStream;
   }
 
   playpausePlayer() =>
       _audioPlayer.playing ? _audioPlayer.pause() : _audioPlayer.play();
-
-  bool isPlaying() => _audioPlayer.playing;
 }

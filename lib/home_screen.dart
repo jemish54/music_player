@@ -41,14 +41,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             itemBuilder: ((context, index) {
               final song = AudioRepository.instance.songList[index];
               return SongTile(
-                  song: song, onTap: (song) => Player.instance.playSong(index));
+                  song: song, onTap: () => Player.instance.playSong(index));
             }),
           ),
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            child: StreamBuilder<int>(
+            child: StreamBuilder<int?>(
                 stream: Player.instance.getStream(),
                 builder: (context, index) {
                   return index.data == null
@@ -64,7 +64,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
 class SongTile extends StatelessWidget {
   final SongModel song;
-  final Function(SongModel) onTap;
+  final Function() onTap;
 
   const SongTile({Key? key, required this.song, required this.onTap})
       : super(key: key);
@@ -73,7 +73,7 @@ class SongTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        onTap(song);
+        onTap();
       },
       leading: Neumorphic(
         style: NeumorphicStyle(
@@ -146,9 +146,9 @@ class NowPlayingCard extends StatelessWidget {
               GestureDetector(
                 onPanUpdate: (details) {
                   if (details.delta.dx > 0) {
-                    Player.instance.previousSong(index);
+                    Player.instance.previousSong();
                   } else {
-                    Player.instance.nextSong(index);
+                    Player.instance.nextSong();
                   }
                 },
                 child: Column(
@@ -167,32 +167,34 @@ class NowPlayingCard extends StatelessWidget {
   }
 }
 
-class PlayButton extends StatefulWidget {
+class PlayButton extends StatelessWidget {
   const PlayButton({
     Key? key,
   }) : super(key: key);
 
   @override
-  State<PlayButton> createState() => _PlayButtonState();
-}
-
-class _PlayButtonState extends State<PlayButton> {
-  @override
   Widget build(BuildContext context) {
     return NeumorphicButton(
         onPressed: () {
-          setState(() {
-            Player.instance.playpausePlayer();
-          });
+          Player.instance.playpausePlayer();
         },
         style: const NeumorphicStyle(
             boxShape: NeumorphicBoxShape.circle(),
             shadowLightColor: Colors.black54,
             depth: 4,
             shape: NeumorphicShape.convex),
-        child: Icon(Player.instance.isPlaying()
-            ? Icons.pause_rounded
-            : Icons.play_arrow_rounded));
+        child: StreamBuilder<bool?>(
+          stream: Player.instance.isPlayingStream(),
+          builder: ((context, isPlaying) {
+            if (isPlaying.hasData) {
+              return Icon(isPlaying.data!
+                  ? Icons.pause_rounded
+                  : Icons.play_arrow_rounded);
+            } else {
+              return const Icon(Icons.pause_rounded);
+            }
+          }),
+        ));
   }
 }
 
