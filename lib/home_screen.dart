@@ -2,6 +2,7 @@ import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee_text/marquee_text.dart';
 import 'package:music_player/audio_repository.dart';
+import 'package:music_player/detail_screen.dart';
 import 'package:music_player/player.dart';
 import 'package:music_player/providers.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -71,32 +72,36 @@ class SongTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        onTap();
-      },
-      leading: Neumorphic(
-        style: NeumorphicStyle(
-            shape: NeumorphicShape.convex,
-            boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(8.0)),
-            depth: 4,
-            color: Theme.of(context).cardColor),
-        child: QueryArtworkWidget(
-          id: song.id,
-          type: ArtworkType.AUDIO,
-          nullArtworkWidget: Container(
-              padding: const EdgeInsets.all(12),
-              child: const Icon(Icons.music_note)),
-          artworkBorder: BorderRadius.zero,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: ListTile(
+        onTap: () {
+          onTap();
+        },
+        leading: Neumorphic(
+          style: NeumorphicStyle(
+              shape: NeumorphicShape.convex,
+              boxShape:
+                  NeumorphicBoxShape.roundRect(BorderRadius.circular(16.0)),
+              depth: 4,
+              color: Theme.of(context).cardColor),
+          child: QueryArtworkWidget(
+            id: song.id,
+            type: ArtworkType.AUDIO,
+            nullArtworkWidget: Container(
+                padding: const EdgeInsets.all(12),
+                child: const Icon(Icons.music_note)),
+            artworkBorder: BorderRadius.zero,
+          ),
         ),
-      ),
-      title: Text(
-        song.displayName,
-        maxLines: 1,
-      ),
-      subtitle: Text(
-        "${song.artist}",
-        maxLines: 1,
+        title: Text(
+          song.displayName,
+          maxLines: 1,
+        ),
+        subtitle: Text(
+          "${song.artist}",
+          maxLines: 1,
+        ),
       ),
     );
   }
@@ -110,56 +115,71 @@ class NowPlayingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final song = AudioRepository.instance.songList[index];
     return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Neumorphic(
-        style: NeumorphicStyle(
-            shape: NeumorphicShape.concave,
-            depth: 8,
-            boxShape: NeumorphicBoxShape.roundRect(BorderRadius.circular(12)),
-            color: Colors.blue),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Neumorphic(
-                style: NeumorphicStyle(
-                    shape: NeumorphicShape.convex,
-                    boxShape: NeumorphicBoxShape.roundRect(
-                        BorderRadius.circular(8.0)),
-                    depth: -4,
-                    color: Theme.of(context).cardColor),
-                child: QueryArtworkWidget(
-                  id: song.id,
-                  type: ArtworkType.AUDIO,
-                  artworkHeight: 64,
-                  artworkWidth: 64,
-                  artworkBorder: BorderRadius.zero,
-                  nullArtworkWidget: Container(
-                    padding: const EdgeInsets.all(20.0),
-                    child: const Icon(
-                      Icons.music_note,
+      padding: const EdgeInsets.all(24.0),
+      child: InkWell(
+        onTap: () => Navigator.push(
+            context, MaterialPageRoute(builder: (_) => DetailScreen())),
+        child: Neumorphic(
+          style: NeumorphicStyle(
+              shape: NeumorphicShape.concave,
+              depth: 8,
+              boxShape:
+                  NeumorphicBoxShape.roundRect(BorderRadius.circular(24.0)),
+              color: Colors.blue),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Neumorphic(
+                  style: NeumorphicStyle(
+                      shape: NeumorphicShape.convex,
+                      boxShape: NeumorphicBoxShape.roundRect(
+                          BorderRadius.circular(16.0)),
+                      depth: -4,
+                      color: Theme.of(context).cardColor),
+                  child: QueryArtworkWidget(
+                    id: song.id,
+                    type: ArtworkType.AUDIO,
+                    artworkHeight: 64,
+                    artworkWidth: 64,
+                    artworkBorder: BorderRadius.zero,
+                    nullArtworkWidget: Container(
+                      padding: const EdgeInsets.all(20.0),
+                      child: const Icon(
+                        Icons.music_note,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              GestureDetector(
-                onPanUpdate: (details) {
-                  if (details.delta.dx > 0) {
-                    Player.instance.previousSong();
-                  } else {
-                    Player.instance.nextSong();
-                  }
-                },
-                child: Column(
-                  children: [
-                    marqueeText(song.title),
-                    marqueeText("${song.artist}"),
-                  ],
+                GestureDetector(
+                  onPanUpdate: (details) {
+                    if (details.delta.dx > 0) {
+                      Player.instance.previousSong();
+                    } else {
+                      Player.instance.nextSong();
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      marqueeText(song.title,
+                          textStyle: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white)),
+                      const SizedBox(
+                        height: 4.0,
+                      ),
+                      marqueeText("${song.artist}",
+                          textStyle: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          )),
+                    ],
+                  ),
                 ),
-              ),
-              const PlayButton()
-            ],
+                const PlayButton()
+              ],
+            ),
           ),
         ),
       ),
@@ -198,12 +218,12 @@ class PlayButton extends StatelessWidget {
   }
 }
 
-Widget marqueeText(String text) {
+Widget marqueeText(String text, {TextStyle? textStyle}) {
   return SizedBox(
     width: 200,
     child: MarqueeText(
-      text: TextSpan(text: text),
-      speed: 18,
+      text: TextSpan(text: text, style: textStyle),
+      speed: 12,
     ),
   );
 }

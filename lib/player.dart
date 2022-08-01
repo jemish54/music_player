@@ -61,4 +61,14 @@ class Player {
 
   playpausePlayer() =>
       _audioPlayer.playing ? _audioPlayer.pause() : _audioPlayer.play();
+
+  Stream<Duration> getSeekStream() {
+    return _audioPlayer.positionStream;
+  }
+
+  Stream<Duration?> getDuration() => _audioPlayer.durationStream;
+
+  seekTo(double percent) {
+    _audioPlayer.seek(Duration(milliseconds: percent.toInt()));
+  }
 }
