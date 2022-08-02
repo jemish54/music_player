@@ -1,5 +1,4 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:music_player/audio_repository.dart';
 import 'package:music_player/player.dart';
@@ -16,93 +15,66 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
           child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Column(children: [
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text(
-                "All Songs",
-                style: TextStyle(fontSize: 22),
-              ),
-            ),
-            CarouselSlider.builder(
-              itemCount: songList.length,
-              carouselController: carouselController,
-              itemBuilder: ((context, index, realIndex) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: Neumorphic(
-                    style: NeumorphicStyle(
-                        shape: NeumorphicShape.convex,
-                        boxShape: NeumorphicBoxShape.roundRect(
-                            BorderRadius.circular(24.0)),
-                        depth: 8,
-                        color: Theme.of(context).cardColor),
-                    child: QueryArtworkWidget(
-                        id: songList[index].id,
-                        type: ArtworkType.AUDIO,
-                        artworkWidth: 400,
-                        artworkBorder: BorderRadius.zero,
-                        nullArtworkWidget: const SizedBox(
-                          height: 400,
-                          width: 400,
-                          child: Icon(Icons.music_note_rounded),
-                        )),
-                  ),
-                );
-              }),
-              options: CarouselOptions(
-                aspectRatio: 1.2,
-                enlargeCenterPage: true,
-                viewportFraction: 0.7,
-                onPageChanged: (index, reason) =>
-                    Player.instance.playSong(index),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: PlayingDetail(
-                songList: songList,
-                carouselController: carouselController,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 30),
-              child: PlayerSeekbar(),
-            ),
-            const PlayerController()
-          ]),
-          Container(
-            decoration: const BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(28))),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  Icon(
-                    CupertinoIcons.repeat,
-                    size: 28,
-                    color: Colors.white,
-                  ),
-                  Icon(
-                    CupertinoIcons.heart_fill,
-                    size: 28,
-                    color: Colors.white,
-                  ),
-                  Icon(
-                    CupertinoIcons.shuffle,
-                    size: 28,
-                    color: Colors.white,
-                  )
-                ],
-              ),
+          const Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text(
+              "All Songs",
+              style: TextStyle(fontSize: 22),
             ),
           ),
+          CarouselSlider.builder(
+            itemCount: songList.length,
+            carouselController: carouselController,
+            itemBuilder: ((context, index, realIndex) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Neumorphic(
+                  style: NeumorphicStyle(
+                      shape: NeumorphicShape.convex,
+                      boxShape: NeumorphicBoxShape.roundRect(
+                          BorderRadius.circular(24.0)),
+                      depth: 8,
+                      color: Theme.of(context).cardColor),
+                  child: QueryArtworkWidget(
+                      id: songList[index].id,
+                      type: ArtworkType.AUDIO,
+                      artworkWidth: 400,
+                      artworkBorder: BorderRadius.zero,
+                      nullArtworkWidget: const SizedBox(
+                        height: 400,
+                        width: 400,
+                        child: Icon(Icons.music_note_rounded),
+                      )),
+                ),
+              );
+            }),
+            options: CarouselOptions(
+              aspectRatio: 1.2,
+              enlargeCenterPage: true,
+              viewportFraction: 0.7,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: PlayingDetail(
+              songList: songList,
+              carouselController: carouselController,
+            ),
+          ),
+          Column(
+            children: const [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 30),
+                child: PlayerSeekbar(),
+              ),
+              PlayerController(),
+            ],
+          ),
+          const SizedBox(
+            height: 30,
+          )
         ],
       )),
     );
@@ -127,7 +99,7 @@ class PlayingDetail extends StatelessWidget {
           if (songIndex.hasData) {
             carouselController.animateToPage(songIndex.data!);
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 30.0),
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: Column(
                 children: [
                   Padding(

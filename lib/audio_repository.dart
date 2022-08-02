@@ -12,7 +12,7 @@ class AudioRepository {
   final _onAudioQuery = OnAudioQuery();
 
   final _sortType = null;
-  final _orderType = OrderType.ASC_OR_SMALLER;
+  final _orderType = OrderType.DESC_OR_GREATER;
   final _uriType = UriType.EXTERNAL;
   final _ignoreCase = true;
 
